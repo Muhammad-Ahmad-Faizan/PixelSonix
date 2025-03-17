@@ -14,7 +14,8 @@ PixelSonix is an **Image to Text & Speech Converter** that extracts text from im
 - **Libraries:** Tesseract OCR, gTTS (Google Text-to-Speech)  
 
 ## 📸 Screenshots  
-(Include screenshots of your app here)  
+  ![pixelsonix](https://github.com/user-attachments/assets/57d7e018-d5ce-411d-869c-bf1c27a719d7)
+
 
 ## 🔧 Installation  
 1. Clone the repository:  

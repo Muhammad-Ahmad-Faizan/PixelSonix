@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Text & Speech</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background: linear-gradient(135deg, #0a0f24, #1a2a6c, #0a84ff);
+            color: white;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+        }
+
+        .container {
+            width: 50%;
+            margin: auto;
+            background: rgba(20, 20, 20, 0.9);
+            /* Dark semi-transparent card */
+            padding: 20px;
+            box-shadow: 0px 0px 20px rgba(0, 150, 255, 0.5);
+            /* Neon blue glow */
+            border-radius: 10px;
+            margin-top: 50px;
+        }
+
+        h1,
+        h2 {
+            color: #00aaff;
+            /* Electric Blue Text */
+            text-shadow: 0px 0px 10px rgba(0, 170, 255, 0.8);
+        }
+
+        button {
+            background: linear-gradient(45deg, #007bff, #00c3ff);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease-in-out;
+            box-shadow: 0px 0px 10px rgba(0, 200, 255, 0.8);
+        }
+
+        button:hover {
+            background: #0051a8;
+            box-shadow: 0px 0px 20px rgba(0, 200, 255, 1);
+        }
+
+        input {
+            background: rgba(0, 0, 0, 0.6);
+            border: 1px solid #00aaff;
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        #uploadedImage {
+            max-width: 100%;
+            border-radius: 10px;
+            border: 2px solid #00aaff;
+            box-shadow: 0px 0px 15px rgba(0, 170, 255, 0.8);
+            /* margin-left: 150px; */
+        }
+
+        #textOutput,
+        #audioSection {
+            background: rgba(10, 10, 30, 0.8);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(0, 200, 255, 0.8);
+            margin-top: 20px;
+        }
+        
+        
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Image to Text & Speech</h1>
+        <input type="file" id="imageUpload" accept="image/*">
+        <button onclick="uploadImage()">Upload & Process</button>
+        <button onclick="clearData()">Clear</button> <!-- Added Clear Button -->
+
+        <div id="preview">
+            <h2>Uploaded Image:</h2>
+            <img id="uploadedImage" src="" alt="Uploaded Image">
+        </div>
+
+        <div id="textOutput">
+            <h2>Extracted Text:</h2>
+            <p id="extractedText"></p>
+        </div>
+
+        <div id="audioSection">
+            <h2>Text-to-Speech Audio:</h2>
+            <audio id="audioPlayer" controls></audio>
+            <a id="downloadLink" download="extracted_audio.mp3">
+                <button>Download Audio</button>
+            </a>
+        </div>
+    </div>
+
+    <script>
+        let uploadedFileName = "";
+
+        function uploadImage() {
+            let inputFile = document.getElementById("imageUpload").files[0];
+
+            if (!inputFile) {
+                alert("Please select an image first.");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", inputFile);
+
+            fetch("http://127.0.0.1:5000/upload", {
+                method: "POST",
+                body: formData,
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.text) {
+                        uploadedFileName = inputFile.name;  // Store filename for deletion
+
+                        document.getElementById("uploadedImage").src = URL.createObjectURL(inputFile);
+                        document.getElementById("uploadedImage").style.display = "block";
+
+                        document.getElementById("extractedText").innerText = data.text;
+                        document.getElementById("textOutput").style.display = "block";
+
+                        document.getElementById("audioPlayer").src = data.audio_url;
+                        document.getElementById("audioSection").style.display = "block";
+                        document.getElementById("downloadLink").href = data.audio_url;
+                    } else {
+                        alert("Error processing image.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+
+        function clearData() {
+            if (!uploadedFileName) return;  // No file uploaded yet
+
+            fetch(`http://127.0.0.1:5000/clear?filename=${uploadedFileName}`, {
+                method: "DELETE",
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        document.getElementById("imageUpload").value = "";
+                        document.getElementById("uploadedImage").src = "";
+                        document.getElementById("uploadedImage").style.display = "none";
+                        document.getElementById("extractedText").innerText = "";
+                        document.getElementById("textOutput").style.display = "none";
+                        document.getElementById("audioPlayer").src = "";
+                        document.getElementById("audioSection").style.display = "none";
+                        document.getElementById("downloadLink").href = "#";
+
+                        uploadedFileName = "";
+                    } else {
+                        alert("Error clearing data.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+        }
+    </script>
+</body>
+
+</html>

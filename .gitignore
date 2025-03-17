@@ -1,0 +1,7 @@
+# Ignore virtual environment
+image_sound/
+
+# Ignore installed packages
+__pycache__/
+*.pyc
+*.pyo
